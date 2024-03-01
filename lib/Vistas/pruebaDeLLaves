@@ -1,0 +1,302 @@
+class VistaInventario extends StatefulWidget {
+
+
+  VistaInventario({Key? key}) : super(key: key);
+
+  @override
+  State<VistaInventario> createState() => _VistaInventarioState();
+}
+
+class _VistaInventarioState extends State<VistaInventario> {
+  final List<Producto> productos = [
+    Producto(1, 'Producto1', 10.0, 100),
+    Producto(2, 'Producto2', 20.0, 50),
+    Producto(3, 'Producto3', 15.0, 75),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Inventario'),
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              itemCount: productos.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(productos[index].nombre),
+                  subtitle: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('ID: ${productos[index].id}'),
+                      Text('Precio: \$${productos[index].precio.toStringAsFixed(2)}'),
+                      Text('Stock: ${productos[index].stock}'),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  agregarProducto(context);
+                },
+                child: const Text('Agregar'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  modificarProducto(context);
+                },
+                child: const Text('Modificar'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  eliminarProducto(context);
+                },
+                child: const Text('Eliminar'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // metodos controlador 
+  void mostrarMensajeError(BuildContext context, String mensaje) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Error'),
+          content: Text(mensaje),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cerrar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // agregar producto
+  void agregarProducto(BuildContext context) {
+    TextEditingController idController = TextEditingController();
+    TextEditingController nombreController = TextEditingController();
+    TextEditingController precioController = TextEditingController();
+    TextEditingController stockController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Agregar Producto'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: idController,
+                decoration: const InputDecoration(
+                  labelText: 'ID',
+                ),
+                keyboardType: TextInputType.number,
+              ),
+              TextField(
+                controller: nombreController,
+                decoration: const InputDecoration(
+                  labelText: 'Nombre',
+                ),
+              ),
+              TextField(
+                controller: precioController,
+                decoration: const InputDecoration(
+                  labelText: 'Precio',
+                ),
+                keyboardType: TextInputType.numberWithOptions(decimal: true),
+              ),
+              TextField(
+                controller: stockController,
+                decoration: const InputDecoration(
+                  labelText: 'Stock',
+                ),
+                keyboardType: TextInputType.number,
+              ),
+            ],
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                int id = int.tryParse(idController.text) ?? 0;
+                String nombre = nombreController.text;
+                double precio = double.tryParse(precioController.text) ?? 0.0;
+                int stock = int.tryParse(stockController.text) ?? 0;
+
+                if (id != 0 && !productos.any((producto) => producto.id == id)) {
+                  productos.add(Producto(id, nombre, precio, stock));
+                  Navigator.of(context).pop();
+                  setState(() {});
+                } else {
+                  mostrarMensajeError(context, 'El ID ya existe o es inválido');
+                }
+              },
+              child: const Text('Agregar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // modificar producto
+  void modificarProducto(BuildContext context) {
+    TextEditingController idController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Modificar Producto'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: idController,
+                decoration: const InputDecoration(
+                  labelText: 'ID del Producto',
+                ),
+                keyboardType: TextInputType.number,
+              ),
+            ],
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                int id = int.tryParse(idController.text) ?? 0;
+
+                Producto productoEncontrado = buscarProductoPorId(id);
+                Navigator.of(context).pop();
+                mostrarDialogoModificar(context, productoEncontrado);
+              },
+              child: const Text('Buscar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void mostrarDialogoModificar(BuildContext context, Producto producto) {
+    TextEditingController nombreController = TextEditingController(text: producto.nombre);
+    TextEditingController precioController = TextEditingController(text: producto.precio.toString());
+    TextEditingController stockController = TextEditingController(text: producto.stock.toString());
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Modificar Producto'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: nombreController,
+                decoration: const InputDecoration(
+                  labelText: 'Nombre',
+                ),
+              ),
+              TextField(
+                controller: precioController,
+                decoration: const InputDecoration(
+                  labelText: 'Precio',
+                ),
+                keyboardType: TextInputType.numberWithOptions(decimal: true),
+              ),
+              TextField(
+                controller: stockController,
+                decoration: const InputDecoration(
+                  labelText: 'Stock',
+                ),
+                keyboardType: TextInputType.number,
+              ),
+            ],
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                producto.nombre = nombreController.text;
+                producto.precio = double.tryParse(precioController.text) ?? 0.0;
+                producto.stock = int.tryParse(stockController.text) ?? 0;
+
+                Navigator.of(context).pop();
+                setState(() {});
+              },
+              child: const Text('Modificar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Producto buscarProductoPorId(int id) {
+    Producto productoEncontrado;
+    try {
+      productoEncontrado = productos.firstWhere((producto) => producto.id == id);
+    } catch (e) {
+      productoEncontrado = Producto(0, '', 0.0, 0);
+    }
+    return productoEncontrado;
+  }
+
+// eliminar producto
+void eliminarProducto(BuildContext context) {
+  TextEditingController idController = TextEditingController();
+
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Eliminar Producto'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: idController,
+              decoration: const InputDecoration(
+                labelText: 'ID del Producto',
+              ),
+              keyboardType: TextInputType.number,
+            ),
+          ],
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              int id = int.tryParse(idController.text) ?? 0;
+              bool removed = productos.remove(productos.firstWhere((producto) => producto.id == id, orElse: () => Producto(0, '', 0.0, 0)));
+              if (removed) {
+                Navigator.of(context).pop();
+                setState(() {});
+              } else {
+                mostrarMensajeError(context, 'Producto no encontrado');
+              }
+            },
+            child: const Text('Eliminar'),
+          ),
+        ],
+      );
+    },
+  );
+}
+}      
+

@@ -1,12 +1,12 @@
-class Cliente {
+class Proveedor{
   int id;
   String nombre;
   String telefono;
-  
-  Cliente({
-   required this.id,
-   required this.nombre, 
-   required this.telefono
+
+  Proveedor({
+    required this.id,
+    required this.nombre, 
+    required this.telefono
     });
     Map<String, dynamic> toMap() {
     return {
@@ -15,5 +15,4 @@ class Cliente {
       'telefono': telefono,
     };
   }
-
 }
