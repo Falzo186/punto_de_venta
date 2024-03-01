@@ -15,6 +15,7 @@ void main() async {
   await Hive.openBox('clientes');
   await Hive.openBox('proveedores');
   await Hive.openBox('carrito');
+  await Hive.openBox('ventas');
   runApp( MyApp());
 }
 
@@ -176,6 +177,7 @@ Widget build(BuildContext context) {
                   onPressed: () {
                     int idProducto = int.tryParse(_idProductoController.text) ?? 0;
                 if(_controladorPrincipal.ComprarProductos(idProducto)){
+                    totalCompra = 0;
                     totalCompra=_controladorPrincipal.getTotalCompra();
                     mostrarMensajeError(context, 'Producto agregado al carrito');
                     setState(() {
@@ -186,18 +188,6 @@ Widget build(BuildContext context) {
                     }
                    },
                   child: const Text('Comprar'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    // Acción del botón Eliminar
-                  },
-                  child: const Text('Eliminar'),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    // Acción del botón Cancelar
-                  },
-                  child: const Text('Cancelar'),
                 ),
               ],
             ),

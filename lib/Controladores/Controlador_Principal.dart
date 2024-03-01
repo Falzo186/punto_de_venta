@@ -1,5 +1,6 @@
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:punto_de_venta/Controladores/Controlador_Almacen.dart';
+import 'package:punto_de_venta/Controladores/Controlador_Venta.dart';
 import 'package:punto_de_venta/Modelos/Producto.dart';
 
 class ControladorPrincipal {
@@ -8,6 +9,27 @@ class ControladorPrincipal {
   double totalCompra = 0;
   late List<Producto> productos;
  List<Producto> carrito = [];
+ControladorVenta controladorVenta = ControladorVenta();
+
+initState() {
+  productos = obtenerProductos();
+  carrito = cargarCarritoDeHive();
+}
+
+List<Producto> cargarCarritoDeHive() {
+var carritoBox = Hive.box('carrito');
+    List<Producto> listacarrito = [];
+    for (var key in carritoBox.keys) {
+      var producto = carritoBox.get(key);
+      listacarrito.add(Producto(
+        id: producto['id'],
+        nombre: producto['nombre'],
+        precio: producto['precio'],
+        stock: producto['stock'],
+      ));
+    }
+    return listacarrito;
+}
 
   List<Producto> obtenerProductos() {
     var productosBox = Hive.box('productos');
@@ -24,7 +46,7 @@ class ControladorPrincipal {
     return listaProductos;
   }
 bool ComprarProductos(int id) {
-  productos = obtenerProductos();
+productos = obtenerProductos();
   Producto productoExistente;
 
   for (int i = 0; i < carrito.length; i++) {
@@ -84,15 +106,24 @@ void CancelarCompra() {
   totalCompra = 0; // Reiniciar el total de la compra
   productos = obtenerProductos(); // Actualizar la lista de productos
 }
+
 void FinalizarCompra() {
-  
+productos = obtenerProductos();
   for (int i = 0; i < productos.length; i++) {
     Producto producto = productos[i];
     _controladorAlmacen.modificarProducto(producto); // Actualizar el stock del producto en el almacén
   }
+
+  // Crear la venta con los datos necesarios
+  
+  Producto producto = Producto(id: 1, nombre: 'galletas', precio: 10.0, stock: 10);
+  List<Producto> productos2 = [producto];
+  controladorVenta.hacerVenta(18.0, productos2);
+
   carrito.clear(); // Vaciar la lista de carrito
   totalCompra = 0; // Reiniciar el total de la compra
 }
+
 void guardarCarritoEnHive() {
   for (var producto in carrito) {
     carritoBox.put(producto.id, {
@@ -106,6 +137,7 @@ void guardarCarritoEnHive() {
   double getTotalCompra() {
     return totalCompra;
   }
+
 }
 
 

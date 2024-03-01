@@ -28,6 +28,7 @@ class Producto {
       stock: stock ?? this.stock,
     );
   }
+  @override
   String toString() {
     return '$nombre\nPrecio: $precio\nCantidad: $stock';
   }
